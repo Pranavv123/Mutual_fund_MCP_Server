@@ -1,0 +1,8 @@
+fastmcp
+requests
+fastapi
+uvicorn
+langchain
+langchain-google-genai
+fastmcp
+python-dotenv
