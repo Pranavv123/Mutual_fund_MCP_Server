@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from tools import search_schemes
+from tools import search_schemes, fetch_latest_nav
 
 mcp = FastMCP(
     name="mutual-fund-mcp",
@@ -25,6 +25,26 @@ def search_schemes_tool(scheme_name: str) -> dict:
         "count": len(results),
         "schemes": results,
     }
+
+@mcp.tool()
+def get_latest_nav(scheme_code: str) -> dict:
+    """
+    Get the latest NAV of a mutual fund scheme.
+
+    Args:
+        scheme_code: Unique scheme code of the mutual fund (e.g., 120503)
+
+    Returns:
+        JSON object containing the latest NAV details.
+
+    Example:
+    Query: what is the latest nav of SBI Contra Fund - Direct Plan - Income Distribution cum Capital Withdrawal Option (IDCW) mutual fund scheme?
+    Args: scheme_code : 119724
+    """
+
+    result = fetch_latest_nav(scheme_code)
+
+    return result
 
 
 if __name__ == "__main__":
