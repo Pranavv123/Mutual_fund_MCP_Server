@@ -11,8 +11,10 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain.agents import create_agent
+from dotenv import load_dotenv
+load_dotenv()
 
-from agent import llm
+
 from prompt import SYSTEM_PROMPT
 
 
@@ -29,7 +31,7 @@ class AppState:
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     temperature=0.2,
-    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
 
@@ -38,7 +40,7 @@ async def lifespan(app: FastAPI):
 
     server_params = StdioServerParameters(
         command="python",
-        args=["mf_mcp_server.py"],
+        args=["mf_mcp_server.py"]
     )
 
     async with stdio_client(server_params) as (read, write):
@@ -68,6 +70,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 @app.post("/ask")
 async def ask_agent(request: QueryRequest):
@@ -77,6 +82,8 @@ async def ask_agent(request: QueryRequest):
             response = await AppState.agent.ainvoke(
                 {"messages": [{"role": "user", "content": request.query}]}
             )
+            logging.info(f"Agent response: {response}")
+            
 
         final_message = response["messages"][-1].content
 

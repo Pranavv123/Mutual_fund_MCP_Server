@@ -1,5 +1,12 @@
 from fastmcp import FastMCP
-from tools import search_schemes, fetch_latest_nav
+from tools import (
+    search_schemes, 
+    fetch_latest_nav,
+    fetch_nav_history, 
+    normalize_nav_data, 
+    generate_nav_summary,
+    compress_nav_history
+)
 
 mcp = FastMCP(
     name="mutual-fund-mcp",
@@ -46,6 +53,39 @@ def get_latest_nav(scheme_code: str) -> dict:
 
     return result
 
+
+@mcp.tool()
+def get_nav_history(scheme_code: str) -> dict:
+    """
+    Get compressed historical NAV for a mutual fund scheme.
+
+    Args:
+        scheme_code: Mutual fund scheme code
+
+    Returns:
+        JSON object containing summary and compressed trend data.
+    """
+
+    api_response = fetch_nav_history(scheme_code)
+
+    raw_nav_data = api_response["data"]
+    meta = api_response["meta"]
+
+    normalized = normalize_nav_data(raw_nav_data)
+
+    summary = generate_nav_summary(normalized)
+
+    compressed = compress_nav_history(normalized)
+
+    return {
+        "scheme_code": scheme_code,
+        "scheme_name": meta.get("scheme_name"),
+        "fund_house": meta.get("fund_house"),
+        "summary": summary,
+        "total_points_original": len(normalized),
+        "total_points_returned": len(compressed),
+        "trend_data": compressed
+    }
 
 if __name__ == "__main__":
     # stdio transport allows this to be run as subprocess
